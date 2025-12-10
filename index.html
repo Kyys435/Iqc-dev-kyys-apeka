@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>IQC Dev Kyys Apeka</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg1: #0b0213;
+      --bg2: #16062a;
+      --card: rgba(255,255,255,0.03);
+      --accent: #a86bff;
+      --accent2: #caa0ff;
+      --text: #fff;
+      --muted: #bfa8ffb5;
+      --radius: 18px;
+    }
+
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: linear-gradient(140deg, var(--bg1), var(--bg2));
+      font-family: 'Orbitron', sans-serif;
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    /* STARFIELD */
+    #starfield {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0.55;
+      mix-blend-mode: screen;
+    }
+
+    .wrap {
+      position: relative;
+      z-index: 2;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 40px 16px;
+      box-sizing: border-box;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 480px;
+      background: var(--card);
+      backdrop-filter: blur(12px);
+      padding: 26px;
+      border-radius: var(--radius);
+      border: 1px solid rgba(168,107,255,0.18);
+      box-shadow: 0 0 35px rgba(168,107,255,0.16);
+    }
+
+    h1 {
+      text-align: center;
+      margin: 0 0 20px;
+      color: var(--accent2);
+      text-shadow: 0 0 8px rgba(168,107,255,0.3);
+    }
+
+    label {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 12px;
+      border-radius: var(--radius);
+      border: 1px solid rgba(168,107,255,0.2);
+      background: #0b0214;
+      color: var(--text);
+      margin-bottom: 14px;
+      outline: none;
+      transition: 0.18s;
+      font-family: 'Orbitron', sans-serif;
+    }
+
+    input:focus, textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 12px rgba(168,107,255,0.35);
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      border-radius: var(--radius);
+      border: none;
+      background: var(--accent);
+      font-weight: 700;
+      cursor: pointer;
+      color: #0e0012;
+      transition: 0.25s;
+      box-shadow: 0 0 16px rgba(168,107,255,0.42);
+    }
+
+    button:hover {
+      background: var(--accent2);
+      transform: translateY(-2px);
+      box-shadow: 0 0 24px rgba(168,107,255,0.55);
+    }
+
+    .preview {
+      display: none;
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    .preview img {
+      width: 100%;
+      border-radius: var(--radius);
+      border: 1px solid rgba(168,107,255,0.25);
+      box-shadow: 0 0 26px rgba(168,107,255,0.2);
+    }
+
+    .note {
+      margin-top: 12px;
+      text-align: center;
+      color: rgba(255,255,255,0.55);
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- STARFIELD -->
+<canvas id="starfield"></canvas>
+
+<div class="wrap">
+  <div class="container">
+    <h1>IQC Dev Kyys Apeka</h1>
+
+    <label>Battery %</label>
+    <input id="battery" value="90">
+
+    <label>Operator</label>
+    <input id="carrier" value="AXIS">
+
+    <label>Teks Pesan</label>
+    <textarea id="message"></textarea>
+
+    <button id="mainButton" onclick="generate()">Generate</button>
+
+    <div id="preview" class="preview">
+      <p style="color:var(--muted);font-size:13px">Preview</p>
+      <img id="imgPreview" src="">
+    </div>
+
+    <p class="note">Powered by Kyys Apeka Dev</p>
+  </div>
+</div>
+
+
+<script>
+/* STARFIELD */
+(function(){
+  const c = document.getElementById("starfield");
+  const x = c.getContext("2d");
+  let w, h, s = [], DPR = Math.min(devicePixelRatio, 2);
+
+  function R(){ w=c.width=innerWidth*DPR; h=c.height=innerHeight*DPR; init(); }
+
+  function init(){
+    let count = Math.floor((w*h)/9000);
+    s = [];
+    for(let i=0;i<count;i++){
+      s.push({x:Math.random()*w,y:Math.random()*h,r:Math.random()*1.4+.3,p:Math.random()*6.28,sp:Math.random()*0.0005+0.00015});
+    }
+  }
+
+  function draw(t){
+    x.clearRect(0,0,w,h);
+    for(let a of s){
+      let tw = (Math.sin(t*a.sp+a.p)+1)/2;
+      let al = tw*0.9+0.1;
+      x.beginPath();
+      x.fillStyle=`rgba(200,170,255,${al})`;
+      x.arc(a.x,a.y,a.r*DPR,0,6.28);
+      x.fill();
+    }
+    requestAnimationFrame(draw);
+  }
+
+  R(); addEventListener("resize",R);
+  requestAnimationFrame(draw);
+})();
+
+/* GENERATOR */
+function now(){
+  let d=new Date(),h=d.getHours(),m=d.getMinutes();
+  return `${String(h).padStart(2,"0")}.${String(m).padStart(2,"0")}`;
+}
+
+function generate(){
+  const time = now();
+  const bat = encodeURIComponent(battery.value);
+  const car = encodeURIComponent(carrier.value);
+  const msg = encodeURIComponent(message.value);
+
+  const imgURL =
+`https://brat.siputzx.my.id/iphone-quoted?time=${time}&batteryPercentage=${bat}&carrierName=${car}&messageText=${msg}`;
+
+  imgPreview.src = imgURL;
+  preview.style.display = "block";
+
+  mainButton.textContent = "Download";
+  mainButton.onclick = () => {
+    window.location.href =
+      `api/download.php?time=${time}&battery=${bat}&carrier=${car}&text=${msg}`;
+  };
+}
+</script>
+
+</body>
+</html>

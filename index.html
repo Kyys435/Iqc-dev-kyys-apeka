@@ -140,24 +140,23 @@
   <div class="container">
     <h1>Dev Kyys Apeka</h1>
 
-    <label>Battery %</label>
-    <input id="battery" value="90">
+    <label>Baterai %</label>
+    <input id="battery" type="number" min="0" max="100" value="90">
 
     <label>Operator</label>
-<input id="carrier" value="AXIS">
+    <input id="carrier" value="AXIS">
 
-<label>Teks Pesan</label>
-<textarea id="message">DevKyysApeka</textarea>
+    <label>Teks Pesan</label>
+    <textarea id="message" rows="3">Dev Kyys Apeka</textarea>
 
-<button id="mainButton" onclick="generate()">Generate</button>
+    <button id="mainButton" type="button">Generate</button>
 
     <div id="preview" class="preview">
       <p style="color:var(--muted);font-size:13px">Preview</p>
-      <img id="imgPreview" src="">
+      <img id="imgPreview" src="" alt="preview image">
     </div>
-      
+
     <p class="note">Powered by Kyys Apeka Dev</p>
-      
     <p class="note">Tekan Download Nya</p>
   </div>
 </div>
@@ -167,16 +166,17 @@
 /* STARFIELD */
 (function(){
   const c = document.getElementById("starfield");
+  if (!c || !c.getContext) return;
   const x = c.getContext("2d");
-  let w, h, s = [], DPR = Math.min(devicePixelRatio, 2);
+  let w, h, s = [], DPR = Math.min(devicePixelRatio || 1, 2);
 
-  function R(){ w=c.width=innerWidth*DPR; h=c.height=innerHeight*DPR; init(); }
+  function R(){ w=c.width=Math.ceil(innerWidth*DPR); h=c.height=Math.ceil(innerHeight*DPR); c.style.width = innerWidth + "px"; c.style.height = innerHeight + "px"; init(); }
 
   function init(){
-    let count = Math.floor((w*h)/9000);
+    let count = Math.max(30, Math.floor((w*h)/9000));
     s = [];
     for(let i=0;i<count;i++){
-      s.push({x:Math.random()*w,y:Math.random()*h,r:Math.random()*1.4+.3,p:Math.random()*6.28,sp:Math.random()*0.0005+0.00015});
+      s.push({x:Math.random()*w,y:Math.random()*h,r:(Math.random()*1.4+0.3)*DPR,p:Math.random()*6.28,sp:Math.random()*0.0005+0.00015});
     }
   }
 
@@ -187,7 +187,7 @@
       let al = tw*0.9+0.1;
       x.beginPath();
       x.fillStyle=`rgba(200,170,255,${al})`;
-      x.arc(a.x,a.y,a.r*DPR,0,6.28);
+      x.arc(a.x,a.y,a.r,0,6.28);
       x.fill();
     }
     requestAnimationFrame(draw);
@@ -203,28 +203,50 @@ function now(){
   return `${String(h).padStart(2,"0")}.${String(m).padStart(2,"0")}`;
 }
 
-function generate(){
-  const time = now();
-  const bat = encodeURIComponent(battery.value);
-  const car = encodeURIComponent(carrier.value);
-  const msg = encodeURIComponent(message.value);
+(function(){
+  // grab elements once
+  const battery = document.getElementById('battery');
+  const carrier = document.getElementById('carrier');
+  const message = document.getElementById('message');
+  const imgPreview = document.getElementById('imgPreview');
+  const preview = document.getElementById('preview');
+  const mainButton = document.getElementById('mainButton');
 
-  const imgURL =
-`https://brat.siputzx.my.id/iphone-quoted?time=${time}&batteryPercentage=${bat}&carrierName=${car}&messageText=${msg}`;
+  if (!battery || !carrier || !message || !imgPreview || !preview || !mainButton) {
+    console.error('Some required DOM elements are missing.');
+    return;
+  }
 
-  imgPreview.src = imgURL;
-  preview.style.display = "block";
+  function generate() {
+    const time = now();
+    const bat = encodeURIComponent(battery.value || '');
+    const car = encodeURIComponent(carrier.value || '');
+    const msg = encodeURIComponent(message.value || '');
 
-  mainButton.textContent = "Download";
-  mainButton.onclick = () => {
-    window.location.href =
-      `api/download.php?time=${time}&battery=${bat}&carrier=${car}&text=${msg}`;
-  };
-}
+    // URL used to generate preview image (adjust domain/path if needed)
+    const imgURL =
+      `https://brat.siputzx.my.id/iphone-quoted?time=${time}&batteryPercentage=${bat}&carrierName=${car}&messageText=${msg}`;
+
+    imgPreview.src = imgURL;
+    preview.style.display = "block";
+
+    // change button to download action
+    mainButton.textContent = "Download";
+    // set a download handler that navigates to your server-side download script
+    mainButton.onclick = function () {
+      // Keep parameter names consistent with your server-side script.
+      // I use `time`, `battery`, `carrier`, `message`
+      const dlUrl = `api/download.php?time=${encodeURIComponent(time)}&battery=${bat}&carrier=${car}&message=${msg}`;
+      // navigate -> server should return the file/download response
+      window.location.href = dlUrl;
+    };
+  }
+
+  // initial binding
+  mainButton.addEventListener('click', generate);
+
+})();
 </script>
 
 </body>
-
 </html>
-
-

@@ -45,7 +45,6 @@
       display: flex;
       justify-content: center;
       padding: 40px 16px;
-      box-sizing: border-box;
     }
 
     .container {
@@ -73,7 +72,7 @@
       display: block;
     }
 
-    input, textarea {
+    input {
       width: 100%;
       padding: 12px;
       border-radius: var(--radius);
@@ -86,9 +85,25 @@
       font-family: 'Orbitron', sans-serif;
     }
 
-    input:focus, textarea:focus {
+    input:focus {
       border-color: var(--accent);
       box-shadow: 0 0 12px rgba(168,107,255,0.35);
+    }
+
+    /* DISPLAY BOX (TEXT ONLY) */
+    .displayBox {
+      width: 100%;
+      padding: 12px;
+      border-radius: var(--radius);
+      border: 1px solid rgba(168,107,255,0.2);
+      background: #0b0214;
+      color: var(--text);
+      margin-bottom: 14px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 14px;
+      opacity: 0.8;
+      cursor: default;
+      user-select: none;
     }
 
     button {
@@ -140,20 +155,20 @@
   <div class="container">
     <h1>Dev Kyys Apeka</h1>
 
-    <label>Baterai %</label>
+    <label>Battery %</label>
     <input id="battery" type="number" min="0" max="100" value="90">
 
     <label>Operator</label>
     <input id="carrier" value="AXIS">
 
     <label>Teks Pesan</label>
-    <textarea id="message" rows="3">Dev Kyys Apeka</textarea>
+    <div id="messageDisplay" class="displayBox">Dev Kyys Apeka</div>
 
     <button id="mainButton" type="button">Generate</button>
 
     <div id="preview" class="preview">
       <p style="color:var(--muted);font-size:13px">Preview</p>
-      <img id="imgPreview" src="" alt="preview image">
+      <img id="imgPreview" src="">
     </div>
 
     <p class="note">Powered by Kyys Apeka Dev</p>
@@ -161,22 +176,20 @@
   </div>
 </div>
 
-
 <script>
 /* STARFIELD */
 (function(){
   const c = document.getElementById("starfield");
-  if (!c || !c.getContext) return;
   const x = c.getContext("2d");
-  let w, h, s = [], DPR = Math.min(devicePixelRatio || 1, 2);
+  let w, h, s = [], DPR = Math.min(devicePixelRatio, 2);
 
-  function R(){ w=c.width=Math.ceil(innerWidth*DPR); h=c.height=Math.ceil(innerHeight*DPR); c.style.width = innerWidth + "px"; c.style.height = innerHeight + "px"; init(); }
+  function R(){ w=c.width=innerWidth*DPR; h=c.height=innerHeight*DPR; init(); }
 
   function init(){
-    let count = Math.max(30, Math.floor((w*h)/9000));
+    let count = Math.floor((w*h)/9000);
     s = [];
     for(let i=0;i<count;i++){
-      s.push({x:Math.random()*w,y:Math.random()*h,r:(Math.random()*1.4+0.3)*DPR,p:Math.random()*6.28,sp:Math.random()*0.0005+0.00015});
+      s.push({x:Math.random()*w,y:Math.random()*h,r:Math.random()*1.4+.3,p:Math.random()*6.28,sp:Math.random()*0.0005+0.00015});
     }
   }
 
@@ -187,7 +200,7 @@
       let al = tw*0.9+0.1;
       x.beginPath();
       x.fillStyle=`rgba(200,170,255,${al})`;
-      x.arc(a.x,a.y,a.r,0,6.28);
+      x.arc(a.x,a.y,a.r*DPR,0,6.28);
       x.fill();
     }
     requestAnimationFrame(draw);
@@ -204,47 +217,33 @@ function now(){
 }
 
 (function(){
-  // grab elements once
   const battery = document.getElementById('battery');
   const carrier = document.getElementById('carrier');
-  const message = document.getElementById('message');
+  const messageDisplay = document.getElementById('messageDisplay');
   const imgPreview = document.getElementById('imgPreview');
   const preview = document.getElementById('preview');
   const mainButton = document.getElementById('mainButton');
 
-  if (!battery || !carrier || !message || !imgPreview || !preview || !mainButton) {
-    console.error('Some required DOM elements are missing.');
-    return;
-  }
-
   function generate() {
     const time = now();
-    const bat = encodeURIComponent(battery.value || '');
-    const car = encodeURIComponent(carrier.value || '');
-    const msg = encodeURIComponent(message.value || '');
+    const bat = encodeURIComponent(battery.value);
+    const car = encodeURIComponent(carrier.value);
+    const msg = encodeURIComponent(messageDisplay.textContent);
 
-    // URL used to generate preview image (adjust domain/path if needed)
     const imgURL =
       `https://brat.siputzx.my.id/iphone-quoted?time=${time}&batteryPercentage=${bat}&carrierName=${car}&messageText=${msg}`;
 
     imgPreview.src = imgURL;
     preview.style.display = "block";
 
-    // change button to download action
     mainButton.textContent = "Download";
-    // set a download handler that navigates to your server-side download script
-    mainButton.onclick = function () {
-      // Keep parameter names consistent with your server-side script.
-      // I use `time`, `battery`, `carrier`, `message`
-      const dlUrl = `api/download.php?time=${encodeURIComponent(time)}&battery=${bat}&carrier=${car}&message=${msg}`;
-      // navigate -> server should return the file/download response
-      window.location.href = dlUrl;
+    mainButton.onclick = () => {
+      window.location.href =
+        `api/download.php?time=${time}&battery=${bat}&carrier=${car}&message=${msg}`;
     };
   }
 
-  // initial binding
-  mainButton.addEventListener('click', generate);
-
+  mainButton.onclick = generate;
 })();
 </script>
 

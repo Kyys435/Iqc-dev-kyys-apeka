@@ -28,7 +28,6 @@
       overflow-x: hidden;
     }
 
-    /* STARFIELD */
     #starfield {
       position: fixed;
       inset: 0;
@@ -90,8 +89,8 @@
       box-shadow: 0 0 12px rgba(168,107,255,0.35);
     }
 
-    /* DISPLAY BOX (TEXT ONLY) */
-    .displayBox {
+    /* DISPLAY + INPUT SWITCH BOX */
+    .displayBox, .inputBox {
       width: 100%;
       padding: 12px;
       border-radius: var(--radius);
@@ -101,9 +100,22 @@
       margin-bottom: 14px;
       font-family: 'Orbitron', sans-serif;
       font-size: 14px;
-      opacity: 0.8;
-      cursor: default;
+      transition: .2s;
+    }
+
+    .displayBox {
+      opacity: 0.7;
+      cursor: text;
       user-select: none;
+    }
+
+    .inputBox {
+      outline: none;
+    }
+
+    .inputBox:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 12px rgba(168,107,255,0.35);
     }
 
     button {
@@ -148,7 +160,6 @@
 </head>
 <body>
 
-<!-- STARFIELD -->
 <canvas id="starfield"></canvas>
 
 <div class="wrap">
@@ -162,7 +173,13 @@
     <input id="carrier" value="AXIS">
 
     <label>Teks Pesan</label>
+
+    <!-- START DISPLAY TEXT -->
     <div id="messageDisplay" class="displayBox">Dev Kyys Apeka</div>
+    <!-- END DISPLAY TEXT -->
+
+    <!-- HIDDEN INPUT -->
+    <input id="messageInput" class="inputBox" style="display:none;" placeholder="" />
 
     <button id="mainButton" type="button">Generate</button>
 
@@ -177,7 +194,19 @@
 </div>
 
 <script>
-/* STARFIELD */
+
+/* TEXT SWITCHER */
+const display = document.getElementById("messageDisplay");
+const input = document.getElementById("messageInput");
+
+display.onclick = () => {
+  display.style.display = "none";
+  input.style.display = "block";
+  input.value = "";
+  input.focus();
+};
+
+/* STARFIELD (tetap sama) */
 (function(){
   const c = document.getElementById("starfield");
   const x = c.getContext("2d");
@@ -219,16 +248,22 @@ function now(){
 (function(){
   const battery = document.getElementById('battery');
   const carrier = document.getElementById('carrier');
-  const messageDisplay = document.getElementById('messageDisplay');
   const imgPreview = document.getElementById('imgPreview');
   const preview = document.getElementById('preview');
   const mainButton = document.getElementById('mainButton');
+
+  function getMessage() {
+    if (input.style.display === "block" && input.value.trim() !== "") {
+      return input.value.trim();
+    }
+    return "Dev Kyys Apeka";
+  }
 
   function generate() {
     const time = now();
     const bat = encodeURIComponent(battery.value);
     const car = encodeURIComponent(carrier.value);
-    const msg = encodeURIComponent(messageDisplay.textContent);
+    const msg = encodeURIComponent(getMessage());
 
     const imgURL =
       `https://brat.siputzx.my.id/iphone-quoted?time=${time}&batteryPercentage=${bat}&carrierName=${car}&messageText=${msg}`;
